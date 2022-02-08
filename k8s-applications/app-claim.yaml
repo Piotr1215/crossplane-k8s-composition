@@ -1,0 +1,15 @@
+apiVersion: acmeplatform.com/v1alpha1
+kind: AppClaim
+metadata:
+  name: platform-demo 
+  labels:
+    app-owner: piotrzan
+spec:
+  id: acme-platform
+  compositionSelector:
+    matchLabels:
+      type: frontend
+  parameters:
+    namespace: devops-team
+    image: piotrzan/nginx-demo:green
+    host: acme-platform.127.0.0.1.nip.io
