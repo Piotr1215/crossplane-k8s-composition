@@ -6,13 +6,11 @@ This workshop will help you understand Crossplane architecture and use cases.
 - Learn about and see basic building blocks in action
 - Go through real world scenarios of creating, consuming and managing internal platform
 
-> At the end of this tutorial you will able to create a free account in [Upbound Cloud](https://www.upbound.io/) and try provisioning cloud infrastructure youself!
+TODO: Insert video of the Katacoda walktrhough
 
-What makes Crossplane so special? First, it builds on Kubernetes and capitalizes on the fact that the real power of Kubernetes is its powerful API model and control plane logic (control loops). It also moves away from Infrastructure as Code to Infrastructure as Data. The difference is that IaC means writing code to describe how the provisioning should happen, whereas IaD means writing pure data files (in the case of Kubernetes YAML) and submitting them to the control component (in the case of Kubernetes an operator) to encapsulate and execute the provisioning logic.
+TODO: Insert link to Katacoda scenario
 
-The best part about Crossplane is that it seamlessly enables collaboration between Application Teams and Platform Teams, by leveraging [Kubernetes Control](https://containerjournal.com/kubeconcnc/kubernetes-true-superpower-is-its-control-plane/) Plane as the convergence point where everyone meets.
-
-## High Level Architecture
+## Tool of Choice
 
 > For a more overview of Crossplane, check out this [short presentation](https://slides.com/decoder/crossplane) and very comprehensive [Crossplane Docs](https://crossplane.io/docs/v1.6/).
 
@@ -25,7 +23,51 @@ Below diagram explains Crossplane's components and their relations.
 
 </details>
 
+> At the end of this tutorial you will able to create a free account in [Upbound Cloud](https://www.upbound.io/) and try provisioning cloud infrastructure youself!
+
+What makes Crossplane so special? First, it builds on Kubernetes and capitalizes on the fact that the real power of Kubernetes is its powerful API model and control plane logic (control loops). It also moves away from Infrastructure as Code to Infrastructure as Data. The difference is that IaC means writing code to describe how the provisioning should happen, whereas IaD means writing pure data files (in the case of Kubernetes YAML) and submitting them to the control component (in the case of Kubernetes an operator) to encapsulate and execute the provisioning logic.
+
+The best part about Crossplane is that it seamlessly enables collaboration between Application Teams and Platform Teams, by leveraging [Kubernetes Control](https://containerjournal.com/kubeconcnc/kubernetes-true-superpower-is-its-control-plane/) Plane as the convergence point where everyone meets.
+
 ## Kubernetes Simplified
+
+Production grade Kubernetes resources are often complex chunks of YAML with settings related to security, performance, hardware utilization, observability and the list goes on. Below you can see an example of a deployment with hardened security settings and other best practices.
+
+![Complex deployment](_media/complex-deployment.png)
+
+And this is just a single deployment resource, there are many more to worry about. Typically, a containerized app running on Kubernetes will require
+
+- deployment
+- service
+- service account
+- roles and cluster roles
+- role bindings
+- secret
+- config map
+- network policies
+- HPA (horizontal pod autoscaler)
+
+And those are only stateless workflows, for stateful workloads, very often
+
+- volumes
+- persistant volume claim
+- storage class configuraiton
+- stateful sets
+
+And because Kubernetes almost never funcions in isolation, you will need to inclulde multiple CRDs (custom resource definitions) that come along with additonal products like service meshes, observability tech, security scanners and many many more.
+
+Here is a list of Kubernetes resources commonly used to describe workloads. The items marked with * are the ones where developers typally have to interact with.
+
+![K8s Resources](_media/k8s-resources.png)
+
+Now imagine that those resources will need to be multiplied by the number of applications/teams/environments and each is likely to have a slight variation to account for differences in the team governance, tech stack, changes velocity etc.
+
+There are 2 common approaches to solving this problem.
+
+1. Make a handover point bewteen Dev and Ops be a container image. In this scenario developers don't have any influence on how resoiurces are put together and what configuraiton is used. On the other hand Ops do not have development and application know how and context to properly address development concerts. Result? Silos with increasingly complicated and convoluted handoff procedures, no clear separation of concerns, leading to development slowing down and new features being released less frequent.
+2. Shift left without support. Developers are left to theri own devices and prioritize application develooment concerns over operational concenrs.
+
+Correct way TODO
 
 By utilizing [Kubernetes provider](https://github.com/crossplane-contrib/provider-kubernetes), it's possible to control what Kubernetes resources are being created. It also enables complexity hiding for developers not familiar with [Kubernetes Resource Model](https://github.com/Kubernetes/design-proposals-archive/blob/main/architecture/resource-management.md). In this scenario we will deploy a Kubernetes application consisting of:
 
@@ -94,7 +136,7 @@ You observe how all the resources created by the claim got deleted as well
 
 The similicity was possible thanks to Crossplane's composition mechanism which we will explore later.
 
-## Composition
+## The Power of Composition
 
 The magic of crossplane really happens in the [composition](https://crossplane.io/docs/v1.6/reference/composition.html). There are 3 main tasks that composition performs
 
@@ -215,7 +257,7 @@ spec:
       - type: None
 ```
 
-# Key Takeways
+## Key Takeways
 
 The power of Crossplane is the ability to compose infrastructure including adjacent services and even applications and expose simple interafce to the consumer while gracefuly handling the complexity behind the scenes.
 
@@ -225,7 +267,7 @@ The power of Crossplane is the ability to compose infrastructure including adjac
 - Standardized collaboration
 - Ubiquitous language (K8s API)
 
-# Try it yourself
+## Try it yourself
 
 Now that you have learned and experimented with basic Crossplane concepts, head over to [Upbound Cloud](https://www.upbound.io/) where you can create a free account and experiment with provisioning cloud infrastructure yourself!
 
@@ -237,7 +279,7 @@ Now that you have learned and experimented with basic Crossplane concepts, head 
 - find out what is the [True Kubernetes Superpower](https://containerjournal.com/kubeconcnc/kubernetes-true-superpower-is-its-control-plane/)
 - check out why I believe that Crossplane is [The Next Big Shift](https://itnext.io/infrastructure-as-code-the-next-big-shift-is-here-9215f0bda7ce) in IaC
 
-## Community
+## Open Community
 
 If you have any questions regarding Crossplane, join the [slack channel](https://slack.crossplane.io/) and say 👋
 
@@ -253,28 +295,4 @@ Instead of exposing the resources directly to developers who might be inexperien
 - namespace to deploy to
 - image with tag
 - name of the host for ingress
-
-#### Scenario Steps
-
-- create a kind cluster with nginx ingress controller setup `make`
-  > if you have other local clusters with ingress controller running, make sure to stop them so there is no ports collision.
-  > Notice that this cluster does not provision aws provider, only local Kubernetes provider.
-- cd into <kbd>k8s-applications</kbd> directory
-- apply composition and definition `kubectl apply -f composition-definition.yaml`
-  ![get-xrd](_media/get-xrd.png)
-  ![app](_media/app.png)
-- create a namespace for the resources `kubectl create ns devops-team`
-- claim the resources by running `kubectl apply -f app-claim.yaml`
-- navigate to `https://acme-platform.127.0.0.1.nip.io/` and you should see a simple demo page
-  ![green-app](_media/green-app.png)
-
-#### Modify Resources
-
-We are going to modify existing claim by changing the image
-
-- change the image to `piotrzan/nginx-demo:blue`
-- modify the resources by running `kubectl apply -f app-claim-blue.yaml` and after a while the background should change to blue
-  ![blue-app](_media/blue-app.png)
-- delete claim `kubectl delete -f app-claim.yaml`
-- switch to the root directory and cleanup the cluster `make cleanup`
 
