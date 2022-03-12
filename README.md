@@ -1,7 +1,3 @@
-
-### Compose Kubernetes Applications
-
-
 # Introduction to Crossplane
 
 This workshop will help you understand Crossplane architecture and use cases.
@@ -29,36 +25,7 @@ Below diagram explains Crossplane's components and their relations.
 
 </details>
 
-
-Following components are being installed:
-
-✔ k3s cluster</BR>
-✔ helm</BR>
-✔ crossplane</BR>
-✔ crossplane CLI</BR>
-✔ kubernetes provider</BR>
-✔ octant observability
-
-> Wait until "All Set" message is displayed on the screen and verify if cluster is setup correctly
-
-Check the cluster setup `kubectl get pods -A`{{execute T1}}
-
-Check Kuberentes cluster info and version `kubectl cluster-info && echo && kubectl version --short`{{execute T1}}
-
-Proceed to step 2 where we will explore the setup ➡
-
-## Observability 🔎
-
-> During this exercise, feel free to click on *Octant* tab and explore cluster status in a visual way. We will focus on *kubectl* commands.
-
-Click on the Dashboard tab or run octant from this link: https://[[HOST_SUBDOMAIN]]-7777-[[KATACODA_HOST]].environments.katacoda.com/
-
-
 ## Kubernetes Simplified
-
-We will start by practical demonstration of Crossplane composition by utilizing Kubernetes Provider and later dive deeper into what makes compositions so powerful.
-
-> Crossplane can compose infrastructure from various providers and most common usecase is cloud infrastructure. However, composing cloud infrastructure requires access to cloud and storing credentials in a secret. This is obviously not safe and that's why we will use Kubernetes Provider. All the Crossplane concepts and techniques equally apply to cloud provider infrastructure.
 
 By utilizing [Kubernetes provider](https://github.com/crossplane-contrib/provider-kubernetes), it's possible to control what Kubernetes resources are being created. It also enables complexity hiding for developers not familiar with [Kubernetes Resource Model](https://github.com/Kubernetes/design-proposals-archive/blob/main/architecture/resource-management.md). In this scenario we will deploy a Kubernetes application consisting of:
 
@@ -71,13 +38,13 @@ Instead of exposing the resources directly to developers who might be inexperien
 - namespace to deploy to
 - image with tag
 
-First we need to let Crossplane know that we would like to define a composite resource (XR), by creating a composite resource definition (XRD) `kubectl apply -f definition.yaml`{{execute T1}}. Next let's create a sample composition to let Crossplane know what resources should be created `kubectl apply -f composition.yaml`{{execute T1}}.
+First we need to let Crossplane know that we would like to define a composite resource (XR), by creating a composite resource definition (XRD) `kubectl apply -f definition.yaml`. Next let's create a sample composition to let Crossplane know what resources should be created `kubectl apply -f composition.yaml`.
 
 > Definition describes API for creating a composite resource whereas composition defines what managed resources will be created when composite resource is created either directly or by a dedicated claim.
 
-Here are the resources created in our cluster. `kubectl get xrd`{{execute}} shows our composite resource definition whereas `kubectl get compositions`{{execute}} returns all available compositions. Give it a try.
+Here are the resources created in our cluster. `kubectl get xrd` shows our composite resource definition whereas `kubectl get compositions` returns all available compositions. Give it a try.
 
-We need to create a namespace for the resources `kubectl create ns devops-team`{{execute T1}} first.
+We need to create a namespace for the resources `kubectl create ns devops-team` first.
 
 Our composition and definition describes what Kubernetes objects we want to create, but how should developers let us know what should be created? Do they need to open a Jira ticket? 😤... Nah, they just need to create a simple claim, like so
 
@@ -100,13 +67,13 @@ spec:
 
 By applying the claim, we are creating multiple Kubernetes resources "under the hood" without needing to know what they are and how they are created. This concern can be moved onto a Platform Team.
 
-`kubectl apply -f app-claim.yaml`{{execute T1}}
+`kubectl apply -f app-claim.yaml`
 
-`kubectl wait deployment.apps/acmeplatform --namespace devops-team --for condition=AVAILABLE=True --timeout 1m`{{execute T1}}
+`kubectl wait deployment.apps/acmeplatform --namespace devops-team --for condition=AVAILABLE=True --timeout 1m`
 
-There are several resources created based on the composition `kubectl get managed`{{execute}}. One of them is a deployment with a sample web app, let's port forward to it.
+There are several resources created based on the composition `kubectl get managed`. One of them is a deployment with a sample web app, let's port forward to it.
 
-`kubectl port-forward deployment/acmeplatform -n devops-team --address 0.0.0.0  8080:80`{{execute T1}}
+`kubectl port-forward deployment/acmeplatform -n devops-team --address 0.0.0.0  8080:80`
 
 You can also [open the web page right here](https://[[HOST_SUBDOMAIN]]-8080-[[KATACODA_HOST]].environments.katacoda.com/)
 
@@ -118,7 +85,7 @@ We can easily update the image
 
 > Notice how the page changed background color to blue with just one line change
 
-`kubectl port-forward deployment/acmeplatform -n devops-team --address 0.0.0.0  8080:80`{{execute T1}}
+`kubectl port-forward deployment/acmeplatform -n devops-team --address 0.0.0.0  8080:80`
 
 > You can [open the web page right here again](https://[[HOST_SUBDOMAIN]]-8080-[[KATACODA_HOST]].environments.katacoda.com/)
 
@@ -248,7 +215,6 @@ spec:
       - type: None
 ```
 
-
 # Key Takeways
 
 The power of Crossplane is the ability to compose infrastructure including adjacent services and even applications and expose simple interafce to the consumer while gracefuly handling the complexity behind the scenes.
@@ -311,3 +277,4 @@ We are going to modify existing claim by changing the image
   ![blue-app](_media/blue-app.png)
 - delete claim `kubectl delete -f app-claim.yaml`
 - switch to the root directory and cleanup the cluster `make cleanup`
+
