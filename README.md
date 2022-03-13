@@ -1,39 +1,16 @@
 # Introduction to Crossplane
 
-This workshop will help you understand Crossplane architecture and use cases.
+How much Kubernetes do developers need to know? Does shift left mean means ever expanding curriculum of tools and frameworks outside of the main focus point; software development?
 
-- Understand how Crossplane solves infrastructure provisioning and configuration
-- Learn about and see basic building blocks in action
-- Go through real world scenarios of creating, consuming and managing internal platform
+Architectures of the past, relied on silos and complex process of handofs between development, ops, security and other stakeholders. Modern devops practices encourage us to "shift left", enbrace "you build it your run it" mentality. As the borders between silos became blurred and handoff points are getting increasingly automated, developers are required to learn and know more than every before to fully support the whole lifecycle of a product they are responsible for.
 
-TODO: Insert video of the Katacoda walktrhough
+Development teams became multi-disciplinary "mini companies" which can work for a very small projects, but cannot scale to even moderate size. How can we reconcile between developers taking full ownership of the software they create and other concerns like operations, security and compliance still being properly addressed in a standardized way? The answer are Platform Teams responsible for supporting developers by creating standardized and reusable services that make it easy for everyone to be succesfull with their tasks and increasing demands. The emphasis here is on **reusable services** that the Platform Teams provide in form of tools, APIs, products and contracts.
 
-TODO: Insert link to Katacoda scenario
-
-## Tool of Choice
-
-> For a more overview of Crossplane, check out this [short presentation](https://slides.com/decoder/crossplane) and very comprehensive [Crossplane Docs](https://crossplane.io/docs/v1.6/).
-
-Below diagram explains Crossplane's components and their relations.
-
-<details>
-    <summary>Click here to see Crossplane architecture diagram</summary>
-
-![crossplane-components](http://www.plantuml.com/plantuml/proxy?cache=yes&src=https://raw.githubusercontent.com/Piotr1215/crossplane-demo/master/diagrams/crossplane-components.puml&fmt=png)
-
-</details>
-
-> At the end of this tutorial you will able to create a free account in [Upbound Cloud](https://www.upbound.io/) and try provisioning cloud infrastructure youself!
-
-What makes Crossplane so special? First, it builds on Kubernetes and capitalizes on the fact that the real power of Kubernetes is its powerful API model and control plane logic (control loops). It also moves away from Infrastructure as Code to Infrastructure as Data. The difference is that IaC means writing code to describe how the provisioning should happen, whereas IaD means writing pure data files (in the case of Kubernetes YAML) and submitting them to the control component (in the case of Kubernetes an operator) to encapsulate and execute the provisioning logic.
-
-The best part about Crossplane is that it seamlessly enables collaboration between Application Teams and Platform Teams, by leveraging [Kubernetes Control](https://containerjournal.com/kubeconcnc/kubernetes-true-superpower-is-its-control-plane/) Plane as the convergence point where everyone meets.
+Let's look how Corssplane Kubernetes Provider can help developers use just enough Kubernetes to be fully in control of their software and build on company standards in the same time.
 
 ## Kubernetes Simplified
 
-Production grade Kubernetes resources are often complex chunks of YAML with settings related to security, performance, hardware utilization, observability and the list goes on. Below you can see an example of a deployment with hardened security settings and other best practices.
-
-![Complex deployment](_media/complex-deployment.png)
+Production grade Kubernetes resources are often complex chunks of YAML with settings related to security, performance, hardware utilization, observability and the list goes on.
 
 And this is just a single deployment resource, there are many more to worry about. Typically, a containerized app running on Kubernetes will require
 
@@ -56,20 +33,17 @@ And those are only stateless workflows, for stateful workloads, very often
 
 And because Kubernetes almost never funcions in isolation, you will need to inclulde multiple CRDs (custom resource definitions) that come along with additonal products like service meshes, observability tech, security scanners and many many more.
 
+Below you can see an example of a deployment with hardened security settings and other best practices.
+
+![Complex deployment](_media/complex-deployment.png)
+
 Here is a list of Kubernetes resources commonly used to describe workloads. The items marked with * are the ones where developers typally have to interact with.
 
 ![K8s Resources](_media/k8s-resources.png)
 
 Now imagine that those resources will need to be multiplied by the number of applications/teams/environments and each is likely to have a slight variation to account for differences in the team governance, tech stack, changes velocity etc.
 
-There are 2 common approaches to solving this problem.
-
-1. Make a handover point bewteen Dev and Ops be a container image. In this scenario developers don't have any influence on how resoiurces are put together and what configuraiton is used. On the other hand Ops do not have development and application know how and context to properly address development concerts. Result? Silos with increasingly complicated and convoluted handoff procedures, no clear separation of concerns, leading to development slowing down and new features being released less frequent.
-2. Shift left without support. Developers are left to theri own devices and prioritize application develooment concerns over operational concenrs.
-
-Correct way TODO
-
-By utilizing [Kubernetes provider](https://github.com/crossplane-contrib/provider-kubernetes), it's possible to control what Kubernetes resources are being created. It also enables complexity hiding for developers not familiar with [Kubernetes Resource Model](https://github.com/Kubernetes/design-proposals-archive/blob/main/architecture/resource-management.md). In this scenario we will deploy a Kubernetes application consisting of:
+By utilizing [Kubernetes provider](https://github.com/crossplane-contrib/provider-kubernetes), it's possible to control what Kubernetes resources are being created. It also enables complexity hiding for developers not familiar with [Kubernetes Resource Model](https://github.com/Kubernetes/design-proposals-archive/blob/main/architecture/resource-management.md). In the accompanying Katacoda Scenario and Youtube Video we are deploying a Kubernetes application consisting of:
 
 - deployment
 - service
@@ -80,13 +54,7 @@ Instead of exposing the resources directly to developers who might be inexperien
 - namespace to deploy to
 - image with tag
 
-First we need to let Crossplane know that we would like to define a composite resource (XR), by creating a composite resource definition (XRD) `kubectl apply -f definition.yaml`. Next let's create a sample composition to let Crossplane know what resources should be created `kubectl apply -f composition.yaml`.
-
 > Definition describes API for creating a composite resource whereas composition defines what managed resources will be created when composite resource is created either directly or by a dedicated claim.
-
-Here are the resources created in our cluster. `kubectl get xrd` shows our composite resource definition whereas `kubectl get compositions` returns all available compositions. Give it a try.
-
-We need to create a namespace for the resources `kubectl create ns devops-team` first.
 
 Our composition and definition describes what Kubernetes objects we want to create, but how should developers let us know what should be created? Do they need to open a Jira ticket? 😤... Nah, they just need to create a simple claim, like so
 
@@ -109,32 +77,34 @@ spec:
 
 By applying the claim, we are creating multiple Kubernetes resources "under the hood" without needing to know what they are and how they are created. This concern can be moved onto a Platform Team.
 
-`kubectl apply -f app-claim.yaml`
+There are several resources created based on the composition.
 
-`kubectl wait deployment.apps/acmeplatform --namespace devops-team --for condition=AVAILABLE=True --timeout 1m`
+We can easily update the image, just by changing the image name in the paramters section of the AppClaim.
 
-There are several resources created based on the composition `kubectl get managed`. One of them is a deployment with a sample web app, let's port forward to it.
+Deleting the application and underlying resources is as simple as executing kubectl command or setting up GitOps and pushing the yaml file to a git repo.
 
-`kubectl port-forward deployment/acmeplatform -n devops-team --address 0.0.0.0  8080:80`
+The similicity was possible thanks to Crossplane's composition.
 
-You can also [open the web page right here](https://[[HOST_SUBDOMAIN]]-8080-[[KATACODA_HOST]].environments.katacoda.com/)
+## Tools of Choice
 
-In the next section, we will see how easy it is to modify the claim ➡
+By utilizing Kubernetes provider, it's possible to control what Kubernetes resources are being created. It also enables complexity hiding for developers not familiar with [Kubernetes Resource Model](https://github.com/kubernetes/design-proposals-archive/blob/main/architecture/resource-management.md). In this scenario we will deploy a Kubernetes application consisting of:
 
-We can easily update the image
+> For a more overview of Crossplane, check out this [short presentation](https://slides.com/decoder/crossplane) and very comprehensive [Crossplane Docs](https://crossplane.io/docs/v1.6/)
+> as well as my recent blogs, especially [Infrastructure as Code: the next big shift is here](https://itnext.io/infrastructure-as-code-the-next-big-shift-is-here-9215f0bda7ce)
 
-`kubectl apply -f app-claim-blue.yaml`{{execute interrupt}}
+Below diagram explains Crossplane's components and their relations.
 
-> Notice how the page changed background color to blue with just one line change
+![crossplane-components](http://www.plantuml.com/plantuml/proxy?cache=yes&src=https://raw.githubusercontent.com/Piotr1215/crossplane-demo/master/diagrams/crossplane-components.puml&fmt=png)
 
-`kubectl port-forward deployment/acmeplatform -n devops-team --address 0.0.0.0  8080:80`
+What makes Crossplane so special? First, it builds on Kubernetes and capitalizes on the fact that the real power of Kubernetes is its powerful API model and control plane logic (control loops). It also moves away from Infrastructure as Code to Infrastructure as Data. The difference is that IaC means writing code to describe how the provisioning should happen, whereas IaD means writing pure data files (in the case of Kubernetes YAML) and submitting them to the control component (in the case of Kubernetes an operator) to encapsulate and execute the provisioning logic.
 
-> You can [open the web page right here again](https://[[HOST_SUBDOMAIN]]-8080-[[KATACODA_HOST]].environments.katacoda.com/)
+The best part about Crossplane is that it seamlessly enables collaboration between Application Teams and Platform Teams, by leveraging [Kubernetes Control](https://containerjournal.com/kubeconcnc/kubernetes-true-superpower-is-its-control-plane/) Plane as the convergence point where everyone meets.
 
-Deleting the application and underlying resources is as simple as `kubectl delete -f app-claim.yaml`{{execute interrupt}}
-You observe how all the resources created by the claim got deleted as well
+Crossplane Kubernetes Provider helps us **shift left** without overloading developers with complex operational concerns. Our goal is to help developers and application teams to focus on reliably and quickly deliver features and fix bugs etc. In the same time, there are security and operational concerns that must be addressed. Those concerns will differ from team to team, from project to project.
 
-The similicity was possible thanks to Crossplane's composition mechanism which we will explore later.
+DevOps means lowering friction between developers and other functions. It became clear that communication between different stakeholders is the key to efficient collaboration. However, it is very hard to capture the essence of every discussion with all the neuances and extrapolate it as a pattern to other teams. The tooling was simply not there. This changes with Crossplane and the workflow and philosophy it proposes. Now it's possible to capture the nuances and complexity of every scenario and provide a solution where custom and standard parts are well balanced without falling into the trap of the "lowest common denominator".
+
+> Crossplane workflow and philosophy helps us capture and codify necesarry customizations and manage them over time. Now after a meeting between developers and platform team, instead of sending email or meeting notes, we can create a composition that codifies the decisions from a meeting in the form of a contract between developers (claim) and platform team (compositions).
 
 ## The Power of Composition
 
@@ -266,6 +236,7 @@ The power of Crossplane is the ability to compose infrastructure including adjac
 - Increased Automation
 - Standardized collaboration
 - Ubiquitous language (K8s API)
+- Kubernetes provider can be a more powerull alternative to helm
 
 ## Try it yourself
 
@@ -273,7 +244,7 @@ Now that you have learned and experimented with basic Crossplane concepts, head 
 
 ## Additional Resources
 
-- [helm provider](https://github.com/crossplane-contrib/provider-helm)
+- explore additional providers, such as [helm provider](https://github.com/crossplane-contrib/provider-helm)
 - browse [Upbound Registry](https://cloud.upbound.io/browse) where you can discover and try out new providers and advanced compositions
 - if you are familiar with terraform, you will [Crossplane vs Terraform](https://blog.crossplane.io/crossplane-vs-terraform/) comparison by Nic Cope very useful
 - find out what is the [True Kubernetes Superpower](https://containerjournal.com/kubeconcnc/kubernetes-true-superpower-is-its-control-plane/)
@@ -281,18 +252,5 @@ Now that you have learned and experimented with basic Crossplane concepts, head 
 
 ## Open Community
 
-If you have any questions regarding Crossplane, join the [slack channel](https://slack.crossplane.io/) and say 👋
-
-By utilizing Kubernetes provider, it's possible to control what Kubernetes resources are being created. It also enables complexity hiding for developers not familiar with [Kubernetes Resource Model](https://github.com/kubernetes/design-proposals-archive/blob/main/architecture/resource-management.md). In this scenario we will deploy a Kubernetes application consisting of:
-
-- deployment
-- service
-- ingress
-- horizontal pod autoscaler
-
-Instead of exposing the resources directly to developers who might be inexperience with Kubernetes, we will create a simple composition containing only important fields, such as:
-
-- namespace to deploy to
-- image with tag
-- name of the host for ingress
+The open source community around Crossplane is very welcoming and helpful, so if you have any questions regarding Crossplane, join the [slack channel](https://slack.crossplane.io/) and say 👋
 
